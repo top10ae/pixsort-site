@@ -1,25 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PixSort</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PixSort — Sort your photos, keep your originals untouched</title>
+<meta name="description" content="PixSort imports private copies of your photos into albums you control — on-device search, duplicate cleanup, and passcode-locked folders. Apple Photos is never changed." />
+<meta property="og:title" content="PixSort — a private home for your photos" />
+<meta property="og:description" content="Sort your photos into albums without ever touching Apple Photos. On-device, private, yours." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="assets/icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet" />
 <style>
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-         background:#f4f6fb; color:#1b2a3a;
-         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
-  .box { text-align:center; padding:40px; }
-  h1 { font-size:2.4rem; margin:0 0 6px; }
-  p { color:#5b6472; margin:0 0 24px; }
-  a { display:inline-block; margin:0 10px; color:#5b5bd6; font-weight:600; text-decoration:none; }
+  :root{
+    --bg:#F4F4FB; --bg2:#ECEDF8; --surface:#FFFFFF; --ink:#191C2E; --muted:#5F6478; --faint:#8B90A4;
+    --line:#E4E5F0; --line2:#D6D8E6;
+    --indigo:#5B5BD6; --indigo-deep:#4A45C9; --indigo-soft:#EEEEFB;
+    --gold:#F5A623; --gold-soft:#FDF1DC;
+    --radius:16px;
+    --display:"Fraunces",Georgia,serif;
+    --body:"DM Sans",-apple-system,system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1000px 560px at 84% -8%, rgba(91,91,214,.14), transparent 60%),
+                     radial-gradient(760px 460px at 4% 2%, rgba(245,166,35,.10), transparent 58%);
+    background-repeat:no-repeat}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:-.01em;line-height:1.08;text-wrap:balance}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;font-size:21px}
+  .brand img{width:36px;height:36px;border-radius:10px;box-shadow:0 4px 14px rgba(91,91,214,.28)}
+  .store-btn{display:inline-flex;align-items:center;gap:9px;background:var(--ink);color:#fff;
+    font-weight:600;font-size:14.5px;padding:10px 18px;border-radius:12px;transition:transform .15s ease, box-shadow .15s ease}
+  .store-btn:hover{transform:translateY(-1px);box-shadow:0 12px 30px rgba(25,28,46,.24)}
+  .store-btn svg{width:17px;height:17px}
+  .store-btn small{display:block;font-size:10px;font-weight:500;opacity:.7;line-height:1}
+  .store-btn b{font-size:15px;font-weight:700;line-height:1.1}
+
+  .hero{display:grid;grid-template-columns:1.06fr .94fr;gap:56px;align-items:center;padding:52px 0 40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--gold-soft);border:1px solid #F3D9A6;
+    color:#B4791A;font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;margin-bottom:22px}
+  .eyebrow svg{width:14px;height:14px}
+  .hero h1{font-size:clamp(40px,5.8vw,62px)}
+  .hero h1 em{font-style:normal;color:var(--indigo)}
+  .hero p.lede{color:var(--muted);font-size:19px;margin:22px 0 30px;max-width:33ch}
+  .note{color:var(--faint);font-size:13.5px;margin-top:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .note span{display:inline-flex;align-items:center;gap:6px}
+  .note svg{width:15px;height:15px;color:var(--indigo)}
+
+  .phone{justify-self:center;width:min(300px,80vw);border-radius:40px;padding:9px;
+    background:linear-gradient(160deg,#fff,#EDEEF8);border:1px solid var(--line2);
+    box-shadow:0 40px 80px -28px rgba(60,60,120,.4)}
+  .phone img{width:100%;display:block;border-radius:31px}
+
+  /* trust strip */
+  .trust{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:14px 0 8px}
+  .trust .t{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;display:flex;gap:13px;align-items:flex-start}
+  .trust .ic{width:38px;height:38px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--indigo-soft);color:var(--indigo)}
+  .trust .ic.gold{background:var(--gold-soft);color:var(--gold)}
+  .trust svg{width:20px;height:20px}
+  .trust h3{font-family:var(--body);font-weight:700;font-size:15px;margin-bottom:3px}
+  .trust p{color:var(--muted);font-size:13.5px;line-height:1.45}
+
+  section.feat{padding:64px 0 20px}
+  .feat .kicker{color:var(--indigo);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+  .feat h2.sec{font-size:clamp(30px,4.2vw,44px);margin-bottom:12px}
+  .feat .sub{color:var(--muted);font-size:18px;max-width:54ch;margin-bottom:38px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;transition:transform .18s ease, box-shadow .18s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 20px 40px -22px rgba(60,60,120,.35)}
+  .card .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--indigo-soft);color:var(--indigo);margin-bottom:17px}
+  .card.gold .ic{background:var(--gold-soft);color:var(--gold)}
+  .card svg{width:23px;height:23px}
+  .card h3{font-family:var(--display);font-weight:600;font-size:20px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:14.5px}
+
+  .showcase{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;padding:62px 0}
+  .showcase .copy h2{font-size:clamp(28px,3.8vw,40px);margin-bottom:15px}
+  .showcase .copy p{color:var(--muted);font-size:17px;margin-bottom:14px}
+  .showcase .copy .tag{display:inline-flex;align-items:center;gap:8px;background:var(--indigo-soft);color:var(--indigo-deep);
+    font-weight:600;font-size:13.5px;padding:7px 14px;border-radius:999px;margin-bottom:16px}
+  .showcase .shot{justify-self:center;width:min(280px,78vw);border-radius:36px;padding:8px;
+    background:linear-gradient(160deg,#fff,#EDEEF8);border:1px solid var(--line2);box-shadow:0 34px 66px -26px rgba(60,60,120,.38)}
+  .showcase .shot img{width:100%;display:block;border-radius:29px}
+  .showcase.rev .copy{order:2}
+
+  .band{background:linear-gradient(135deg,var(--indigo),#7A5BE0);border-radius:26px;padding:56px 40px;text-align:center;
+    margin:34px 0 60px;position:relative;overflow:hidden;color:#fff}
+  .band::after{content:"";position:absolute;inset:0;background:radial-gradient(460px 220px at 82% 0,rgba(245,166,35,.34),transparent 62%)}
+  .band h2{font-size:clamp(30px,4.4vw,44px);position:relative;color:#fff}
+  .band p{color:rgba(255,255,255,.86);font-size:18px;margin:12px 0 26px;position:relative}
+  .band .store-btn{position:relative;background:#fff;color:var(--ink)}
+
+  footer{border-top:1px solid var(--line);padding:34px 0 60px;color:var(--faint);font-size:14px}
+  .foot-row{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .foot-links{display:flex;gap:24px;flex-wrap:wrap}
+  .foot-links a{color:var(--muted);font-weight:500}
+  .foot-links a:hover{color:var(--ink)}
+  .foot-brand{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:600}
+  .foot-brand img{width:26px;height:26px;border-radius:7px}
+
+  @media(max-width:860px){
+    .hero{grid-template-columns:1fr;gap:34px;text-align:center;padding:30px 0}
+    .hero .eyebrow{margin-inline:auto}.hero p.lede{margin-inline:auto}.note{justify-content:center}
+    .phone{grid-row:1}
+    .trust{grid-template-columns:1fr}
+    .showcase{grid-template-columns:1fr;text-align:center}
+    .showcase.rev .copy{order:0}.showcase .copy .tag{margin-inline:auto}
+  }
 </style>
 </head>
 <body>
-  <div class="box">
-    <h1>PixSort</h1>
-    <p>A private, on‑device photo organiser.</p>
-    <a href="support.html">Support</a>
-    <a href="privacy-policy.html">Privacy Policy</a>
+<div class="wrap">
+
+  <nav>
+    <a class="brand" href="/"><img src="assets/icon.png" alt="PixSort" />PixSort</a>
+    <a class="store-btn" href="https://apps.apple.com/app/id6787977595">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C60.8 141.5 0 184.9 0 273.5c0 26.2 4.8 53.3 14.4 81.2 12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+      <span><small>Download on the</small><b>App&nbsp;Store</b></span>
+    </a>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/></svg>Private · on-device · read-only</span>
+      <h1>Sort your photos. Keep your originals <em>untouched.</em></h1>
+      <p class="lede">PixSort imports private copies into albums you control — then helps you search, de-clutter, and lock them away. Apple Photos is never changed.</p>
+      <a class="store-btn" href="https://apps.apple.com/app/id6787977595">
+        <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C60.8 141.5 0 184.9 0 273.5c0 26.2 4.8 53.3 14.4 81.2 12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+        <span><small>Download on the</small><b>App&nbsp;Store</b></span>
+      </a>
+      <div class="note">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>No account</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Nothing leaves your device</span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>iPhone &amp; iPad</span>
+      </div>
+    </div>
+    <div class="phone"><img src="assets/shot-albums.png" alt="PixSort albums — a Beach Trip album, Inbox, Favorites and Duplicates, each with real photo covers" /></div>
+  </header>
+
+  <div class="trust">
+    <div class="t"><div class="ic gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H4z"/><path d="M4 20h16"/><circle cx="9" cy="9.5" r="1.6"/><path d="M14 15l-3-3.5L4 16"/></svg></div><div><h3>Apple Photos is never touched</h3><p>PixSort only reads your library. It never deletes, moves, or changes a single original.</p></div></div>
+    <div class="t"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/></svg></div><div><h3>Everything on-device</h3><p>Search, tagging, and duplicate detection all run on your phone. Nothing is ever uploaded to us.</p></div></div>
+    <div class="t"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div><h3>Private by design</h3><p>No accounts, no analytics, no ads. Lock any album behind a passcode that stays on your device.</p></div></div>
   </div>
+
+  <section class="feat">
+    <div class="kicker">Inbox zero, for your camera roll</div>
+    <h2 class="sec">A calm home for a chaotic library.</h2>
+    <p class="sub">Bring photos in, file them into albums, and watch the clutter clear — with the tools to find, tidy, and protect them along the way.</p>
+    <div class="cards">
+      <div class="card gold">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></svg></div>
+        <h3>Import into any album</h3>
+        <p>Open an album, pick photos from Apple Photos, and they land right there — no inbox detour, no filing them twice.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></div>
+        <h3>Search by what's in it</h3>
+        <p>On-device AI finds photos by what they show — “beach”, “receipts”, a name you tagged — without a single photo leaving your phone.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg></div>
+        <h3>Clear out duplicates</h3>
+        <p>PixSort spots near-identical shots and helps you keep the best one — reclaiming space in a tap.</p>
+      </div>
+      <div class="card gold">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <h3>Lock away private folders</h3>
+        <p>Hide any album behind a passcode. Hidden folders vanish from the app entirely until you unlock them.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 15V3M8 7l4-4 4 4"/></svg></div>
+        <h3>Export anywhere, lossless</h3>
+        <p>Send an album to iCloud Drive, a USB drive, or a friend — original files, full metadata, exactly as they came in.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9" r="1.6"/><path d="M21 16l-5-5L5 21"/></svg></div>
+        <h3>Live Photos, kept whole</h3>
+        <p>Photos, videos, and Live Photos import in full quality — both components stay linked, nothing downgraded.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="showcase">
+    <div class="copy">
+      <span class="tag">On-device search</span>
+      <h2>Find any photo by what's in it.</h2>
+      <p>Type what you remember — a place, an object, a person you've tagged — and PixSort surfaces it instantly. The whole search index is built and stored on your device.</p>
+      <p style="color:var(--faint);font-size:15px">No cloud, no waiting for uploads, no account. It just works, even offline.</p>
+    </div>
+    <div class="shot"><img src="assets/shot-search.png" alt="PixSort search for 'flower' returning the matching photos" /></div>
+  </section>
+
+  <section class="showcase rev">
+    <div class="copy">
+      <span class="tag">Your library, safe</span>
+      <h2>Organize freely. Nothing to undo.</h2>
+      <p>Because PixSort works on its own private copies, you can sort, merge, and delete inside the app with total freedom — your Apple Photos originals never change.</p>
+      <p style="color:var(--faint);font-size:15px">Apple Photos stays your source of truth and backup. PixSort is just the calm, organized layer on top.</p>
+    </div>
+    <div class="shot"><img src="assets/shot-detail.png" alt="A photo open in PixSort with its details" /></div>
+  </section>
+
+  <div class="band">
+    <h2>Give your photos a home.</h2>
+    <p>On iPhone and iPad. No account, nothing uploaded.</p>
+    <a class="store-btn" href="https://apps.apple.com/app/id6787977595">
+      <svg viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C60.8 141.5 0 184.9 0 273.5c0 26.2 4.8 53.3 14.4 81.2 12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+      <span><small>Download on the</small><b>App&nbsp;Store</b></span>
+    </a>
+  </div>
+
+  <footer>
+    <div class="foot-row">
+      <div class="foot-brand"><img src="assets/icon.png" alt="" />PixSort</div>
+      <div class="foot-links">
+        <a href="https://apps.apple.com/app/id6787977595">App Store</a>
+        <a href="support.html">Support</a>
+        <a href="privacy-policy.html">Privacy</a>
+      </div>
+    </div>
+    <p style="margin-top:20px;font-size:13px">© <span id="yr"></span> PixSort. A private, on-device photo organizer. Apple Photos remains your source of truth and backup.</p>
+  </footer>
+
+</div>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 </body>
 </html>
